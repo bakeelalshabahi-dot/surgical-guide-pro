@@ -1,0 +1,6 @@
+const supabaseUrl = "PUT HERE";
+const supabaseKey = "PUT HERE";
+https://abmvlmpmvroolcaiysrj.supabase.co/rest/v1/
+NEXT_PUBLIC_SUPABASE_URL=https://abmvlmpmvroolcaiysrj.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_5kxSmMZJFjlM5WJuxkKR6A_QEpwGbie
+
