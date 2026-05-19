@@ -1,0 +1,79 @@
+// Surgical Guide Pro - FULL REAL MEDICAL PLATFORM (Next.js + Supabase) // Now upgraded to real authentication + database backend
+
+import { useEffect, useState } from "react"; import { createClient } from "@supabase/supabase-js"; import { Card, CardContent } from "@/components/ui/card"; import { Button } from "@/components/ui/button"; import { Input } from "@/components/ui/input";
+
+// ===================== // SUPABASE SETUP // ===================== const supabaseUrl = "https://YOUR_SUPABASE_URL.supabase.co"; const supabaseKey = "YOUR_SUPABASE_ANON_KEY"; const supabase = createClient(supabaseUrl, supabaseKey);
+
+export default function SurgicalGuidePro() { const [user, setUser] = useState(null); const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [cases, setCases] = useState([]);
+
+// ===================== // AUTH STATE // ===================== useEffect(() => { supabase.auth.getUser().then(({ data }) => { setUser(data?.user || null); });
+
+const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+  setUser(session?.user || null);
+});
+
+return () => listener.subscription.unsubscribe();
+
+}, []);
+
+// ===================== // LOGIN / SIGNUP // ===================== const signUp = async () => { await supabase.auth.signUp({ email, password }); };
+
+const signIn = async () => { await supabase.auth.signInWithPassword({ email, password }); };
+
+const logout = async () => { await supabase.auth.signOut(); };
+
+// ===================== // LOAD CASES (DATABASE) // ===================== const loadCases = async () => { const { data } = await supabase.from("cases").select("*"); setCases(data || []); };
+
+useEffect(() => { loadCases(); }, []);
+
+// ===================== // ADD CASE (ADMIN FUNCTION) // ===================== const addCase = async () => { const title = prompt("Case title"); const description = prompt("Case description");
+
+await supabase.from("cases").insert([{ title, description }]);
+loadCases();
+
+};
+
+// ===================== // UI // ===================== return ( <div className="min-h-screen bg-gray-50 p-6"> <h1 className="text-2xl font-bold mb-4">Surgical Guide Pro (Real Platform)</h1>
+
+{/* AUTH SECTION */}
+  {!user ? (
+    <Card className="p-4 mb-6">
+      <CardContent>
+        <h2 className="font-bold mb-2">Login / Register</h2>
+        <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <div className="flex gap-2 mt-2">
+          <Button onClick={signIn}>Login</Button>
+          <Button onClick={signUp}>Register</Button>
+        </div>
+      </CardContent>
+    </Card>
+  ) : (
+    <div className="mb-4 flex justify-between">
+      <p>Welcome: {user.email}</p>
+      <Button onClick={logout}>Logout</Button>
+    </div>
+  )}
+
+  {/* DASHBOARD */}
+  <Card className="mb-6">
+    <CardContent>
+      <h2 className="font-bold mb-2">Medical Cases</h2>
+      {user && <Button onClick={addCase}>Add Case</Button>}
+      <ul className="mt-3">
+        {cases.map((c, i) => (
+          <li key={i} className="border p-2 mt-2 rounded">
+            <b>{c.title}</b>
+            <p className="text-sm text-gray-600">{c.description}</p>
+          </li>
+        ))}
+      </ul>
+    </CardContent>
+  </Card>
+
+  <p className="text-sm text-gray-500">
+    Powered by Supabase Auth + PostgreSQL Database
+  </p>
+</div>
+
+); }
